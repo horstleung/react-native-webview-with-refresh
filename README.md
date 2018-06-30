@@ -33,13 +33,37 @@
   	```
       compile project(':react-native-webview-with-refresh')
   	```
+    
 
+## Parameters
+Parameter | Usage
+--- | --- 
+url | the url loaded
+matchCondition | regex; would call onUrlMatch if the url meet this condition
+onUrlMatch | the callback when the url meet the condition
 
 ## Usage
 ```javascript
 import RNWebviewWithRefresh from 'react-native-webview-with-refresh';
+export default class App extends Component {
+  onUrlChange = event => {
+    alert(event.url);
+    alert(event.condition);
+  };
 
-// TODO: What to do with the module?
-RNWebviewWithRefresh;
+  render() {
+    return (
+      <View style={styles.container}>
+        <WebViewWithRefresh
+          url="https://google.com/"
+          matchCondition="(http|https)://starfans.info"
+          onUrlMatch={this.onUrlChange}
+          style={styles.webview}
+          ref="webview"
+        />
+      </View>
+    );
+  }
+}
 ```
   
