@@ -6,6 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fattomhk/react-native-webview-with-refresh.git"
+  },
   "keywords": [
     "react-native",
     "webview",
