@@ -81,8 +81,10 @@ export default class App extends Component {
 }
 ```
 
-##Warnning
+## Warnning
+
 For iOS, this lib accept all SSL cert as the WKWebview seems being rude to https://google.com/
 
-##ChangeLog
+## ChangeLog
+
 1.1 switch to WKWebview for better performance; add onStartLoad and onFinishLoad callbacks.
