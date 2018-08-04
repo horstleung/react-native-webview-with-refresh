@@ -34,6 +34,8 @@ RCT_EXPORT_MODULE();
 RCT_EXPORT_VIEW_PROPERTY(url, NSString)
 RCT_EXPORT_VIEW_PROPERTY(matchCondition, NSString)
 RCT_EXPORT_VIEW_PROPERTY(onUrlMatch, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onStartLoad, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onFinishLoad, RCTBubblingEventBlock)
 RCT_EXPORT_METHOD(goTo:(NSString*)url) {
   [_wv goto:url];
 }

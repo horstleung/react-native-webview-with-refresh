@@ -11,17 +11,26 @@ import WebViewWithRefresh from "react-native-webview-with-refresh";
 
 export default class App extends Component {
   onUrlChange = event => {
-    alert(event.url);
-    alert(event.condition);
+    console.warn("onUrlChange: %s", event.url);
+  };
+
+  onStartLoad = event => {
+    console.warn("onStartLoad: %s", event.url);
+  };
+
+  onFinishLoad = event => {
+    console.warn("onFinishLoad: %s", event.url);
   };
 
   render() {
     return (
       <View style={styles.container}>
         <WebViewWithRefresh
-          url="https://google.com/"
+          url="https://www.google.com/"
           matchCondition="(http|https)://starfans.info"
           onUrlMatch={this.onUrlChange}
+          onStartLoad={this.onStartLoad}
+          onFinishLoad={this.onFinishLoad}
           style={styles.webview}
           ref="webview"
         />

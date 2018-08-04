@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.RelativeLayout;
+import android.graphics.Bitmap; 
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
@@ -19,6 +20,8 @@ import java.util.regex.Pattern;
 // The callback interface
 interface MyWebViewClientCallback {
     void webClientCallback(String url, String condition);
+    void onStartLoad(String url);
+    void onFinishLoad(String url);
 }
 class MyWebViewClient extends WebViewClient {
     public String condition;
@@ -38,6 +41,16 @@ class MyWebViewClient extends WebViewClient {
             return true;
         }
         return super.shouldOverrideUrlLoading(view, url);
+    }
+
+   @Override
+    public void onPageStarted(WebView view, String url, Bitmap favicon) {
+        delegate.onStartLoad(url);
+    }
+
+    @Override
+    public void onPageFinished(WebView view, String url) {
+        delegate.onFinishLoad(url);
     }
 }
 
@@ -70,6 +83,28 @@ public class WebViewWithRefresh extends RelativeLayout {
                 reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                         getId(),
                         "onUrlMatch",
+                        event);
+            }
+
+            @Override
+            public void onStartLoad(String url) {
+                WritableMap event = Arguments.createMap();
+                event.putString("url", url);
+                ReactContext reactContext = (ReactContext)getContext();
+                reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                        getId(),
+                        "onStartLoad",
+                        event);
+            }
+
+            @Override
+            public void onFinishLoad(String url) {
+                WritableMap event = Arguments.createMap();
+                event.putString("url", url);
+                ReactContext reactContext = (ReactContext)getContext();
+                reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                        getId(),
+                        "onFinishLoad",
                         event);
             }
         };

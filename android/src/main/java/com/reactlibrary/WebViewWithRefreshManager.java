@@ -49,10 +49,14 @@ public class WebViewWithRefreshManager extends SimpleViewManager<View> {
     @Override
     public @Nullable
     Map getExportedCustomDirectEventTypeConstants() {
-        return MapBuilder.of(
-                "onUrlMatch",
-                MapBuilder.of("registrationName", "onUrlMatch")
-        );
+        return MapBuilder.<String, Object>builder()
+            .put("onUrlMatch",
+                    MapBuilder.of("registrationName", "onUrlMatch"))
+            .put("onStartLoad",
+                    MapBuilder.of("registrationName", "onStartLoad"))
+            .put("onFinishLoad",
+                    MapBuilder.of("registrationName", "onFinishLoad"))
+            .build();
     }
 
 

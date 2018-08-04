@@ -15,7 +15,7 @@
 @implementation WebViewWithRefresh : UIView  {
   RCTEventDispatcher *_eventDispatcher;
   UIRefreshControl *_refreshControl;
-  UIWebView *_webView;
+  WKWebView *_webView;
   NSString *_condition;
 }
 
@@ -24,8 +24,8 @@
   if ((self = [super init])) {
     __weak WebViewWithRefresh *weakSelf = self;
     _eventDispatcher = eventDispatcher;
-    _webView = [[UIWebView alloc] init];
-    _webView.delegate = weakSelf;
+    _webView = [[WKWebView alloc] init];
+    _webView.navigationDelegate = weakSelf;
     _refreshControl = [[UIRefreshControl alloc] init];
     [_webView.scrollView addSubview:_refreshControl];
     [_refreshControl addTarget:self action:@selector(refresh) forControlEvents:UIControlEventValueChanged];
@@ -62,22 +62,65 @@
 
 
 
-#pragma mark - UIWebViewDelegate
+#pragma mark - WKNavigationDelegate
 
-- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
-  NSString* url = [request.URL absoluteString];
-  if(!_onUrlMatch || !_condition){
-    return YES;
-  }
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+    
+  NSString *url = [[navigationAction.request URL] absoluteString];
   
+  if(!_onUrlMatch || !_condition){
+    decisionHandler(WKNavigationActionPolicyAllow);
+    return;
+  }
   NSRegularExpression *regEx = [[NSRegularExpression alloc] initWithPattern:_condition options:NSRegularExpressionCaseInsensitive error:nil];
   NSUInteger regExMatches = [regEx numberOfMatchesInString:url options:0 range:NSMakeRange(0, [url length])];
   
   if (regExMatches > 0) {
     _onUrlMatch(@{@"url": url, @"condition": _condition});
-    return NO;
+    decisionHandler(WKNavigationActionPolicyCancel);
+    return;
   }
-  return YES;
+  decisionHandler(WKNavigationActionPolicyAllow);
+}
+
+- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(null_unspecified WKNavigation *)navigation {
+    NSLog(@"%s", __FUNCTION__);
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    if(!_onStartLoad){
+        return;
+    }
+    _onStartLoad(@{@"url": webView.URL.absoluteString});
+}
+
+- (void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation
+{
+  NSLog(@"%s", __FUNCTION__);
+  [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+  if(!_onFinishLoad){
+      return;
+  }
+  NSString* url = webView.URL.absoluteString ? ([webView.URL absoluteString]) : @"";
+  _onFinishLoad(@{@"url": url});
+}
+
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error {
+  NSLog(@"%s", __FUNCTION__);
+  NSLog(@"%s", [error description]);
+  [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+  if(!_onFinishLoad){
+      return;
+  }
+  NSString* url = webView.URL ? webView.URL.absoluteString : @"";
+  _onFinishLoad(@{@"url": url});
+}
+
+- (void)webView:(WKWebView *)webView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler {
+    NSLog(@"Allowing all");
+    SecTrustRef serverTrust = challenge.protectionSpace.serverTrust;
+    CFDataRef exceptions = SecTrustCopyExceptions (serverTrust);
+    SecTrustSetExceptions (serverTrust, exceptions);
+    CFRelease (exceptions);
+    completionHandler (NSURLSessionAuthChallengeUseCredential, [NSURLCredential credentialForTrust:serverTrust]);
 }
 
 @end
