@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 
 // The callback interface
 interface MyWebViewClientCallback {
-    void webClientCallback(String url, String condition);
+    void webClientCallback(String url, String condition, String currentURL);
     void onStartLoad(String url);
     void onFinishLoad(String url);
 }
@@ -37,7 +37,7 @@ class MyWebViewClient extends WebViewClient {
         Matcher matcher = mPattern.matcher(url);
         if(matcher.find())
         {
-            delegate.webClientCallback(url, condition);
+            delegate.webClientCallback(url, condition, view.getUrl());
             return true;
         }
         return super.shouldOverrideUrlLoading(view, url);
@@ -75,10 +75,11 @@ public class WebViewWithRefresh extends RelativeLayout {
         webClient = new MyWebViewClient();
         webClient.delegate = new MyWebViewClientCallback() {
             @Override
-            public void webClientCallback(String url, String condition) {
+            public void webClientCallback(String url, String condition, String currentURL) {
                 WritableMap event = Arguments.createMap();
                 event.putString("url", url);
                 event.putString("condition", condition);
+                event.putString("currentURL", currentURL);
                 ReactContext reactContext = (ReactContext)getContext();
                 reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                         getId(),

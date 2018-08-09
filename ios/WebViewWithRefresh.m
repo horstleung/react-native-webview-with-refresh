@@ -74,9 +74,10 @@
   }
   NSRegularExpression *regEx = [[NSRegularExpression alloc] initWithPattern:_condition options:NSRegularExpressionCaseInsensitive error:nil];
   NSUInteger regExMatches = [regEx numberOfMatchesInString:url options:0 range:NSMakeRange(0, [url length])];
-  
+  NSString* currentURL = webView.URL ? webView.URL.absoluteString : @"";
+
   if (regExMatches > 0) {
-    _onUrlMatch(@{@"url": url, @"condition": _condition});
+    _onUrlMatch(@{@"url": url, @"condition": _condition, @"currentURL": currentURL});
     decisionHandler(WKNavigationActionPolicyCancel);
     return;
   }
