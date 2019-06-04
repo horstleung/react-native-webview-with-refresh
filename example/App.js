@@ -5,7 +5,8 @@
  */
 
 import React, { Component } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, NativeModules, findNodeHandle } from "react-native";
+const WebViewFunctions = NativeModules.WebViewWithRefreshView;
 
 import WebViewWithRefresh from "react-native-webview-with-refresh";
 
@@ -18,15 +19,17 @@ export default class App extends Component {
     console.warn("onStartLoad: %s", event.url);
   };
 
-  onFinishLoad = event => {
+  onFinishLoad = async event => {
     console.warn("onFinishLoad: %s", event.url);
+    var res = await WebViewFunctions.backPressed(findNodeHandle(this.refs.webview));
+    console.warn(res);
   };
 
   render() {
     return (
       <View style={styles.container}>
         <WebViewWithRefresh
-          url="https://www.google.com/"
+          url="http://mobileapi.metroradio.com.hk/MetroMobile/mobile/default.aspx"
           matchCondition="(http|https)://starfans.info"
           onUrlMatch={this.onUrlChange}
           onStartLoad={this.onStartLoad}

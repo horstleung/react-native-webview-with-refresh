@@ -26,6 +26,8 @@
     _eventDispatcher = eventDispatcher;
     _webView = [[WKWebView alloc] init];
     _webView.navigationDelegate = weakSelf;
+    _webView.UIDelegate = weakSelf;
+
     _refreshControl = [[UIRefreshControl alloc] init];
     [_webView.scrollView addSubview:_refreshControl];
     [_refreshControl addTarget:self action:@selector(refresh) forControlEvents:UIControlEventValueChanged];
@@ -122,6 +124,22 @@
     SecTrustSetExceptions (serverTrust, exceptions);
     CFRelease (exceptions);
     completionHandler (NSURLSessionAuthChallengeUseCredential, [NSURLCredential credentialForTrust:serverTrust]);
+}
+
+#pragma mark - UIDelegate
+- (WKWebView *)webView:(WKWebView *)webView createWebViewWithConfiguration:(WKWebViewConfiguration *)configuration forNavigationAction:(WKNavigationAction *)navigationAction windowFeatures:(WKWindowFeatures *)windowFeatures
+{
+    //For target = blank
+    if (!navigationAction.targetFrame.isMainFrame) {
+        NSURL *URL = navigationAction.request.URL;
+        if ([[UIApplication sharedApplication] respondsToSelector:@selector(openURL:options:completionHandler:)]) {
+            [[UIApplication sharedApplication] openURL:URL options:@{} completionHandler: nil];
+        } else {
+            BOOL success = [[UIApplication sharedApplication] openURL:URL];
+        }
+    }
+    
+    return nil;
 }
 
 @end

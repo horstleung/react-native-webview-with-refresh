@@ -5,6 +5,7 @@ package com.reactlibrary;
 import android.support.annotation.Nullable;
 import android.view.View;
 
+import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.SimpleViewManager;
@@ -16,8 +17,15 @@ import android.webkit.WebViewClient;
 
 import java.util.Map;
 
+import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.Callback;
+
 public class WebViewWithRefreshManager extends SimpleViewManager<View> {
     public static final String REACT_CLASS = "WebViewWithRefresh";
+
+    public WebViewWithRefreshManager(ReactApplicationContext reactContext) {
+        super();
+    }
 
     @Override
     public String getName() {
@@ -30,6 +38,7 @@ public class WebViewWithRefreshManager extends SimpleViewManager<View> {
     public WebViewWithRefresh createViewInstance(ThemedReactContext context){
         // Create a view here
         // https://facebook.github.io/react-native/docs/native-components-android.html#2-implement-method-createviewinstance
+        System.out.println("WebViewWithRefreshManager::createViewInstance");
         WebViewWithRefresh wv = new WebViewWithRefresh(context);
         return wv;
     }

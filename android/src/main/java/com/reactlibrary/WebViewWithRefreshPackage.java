@@ -13,17 +13,20 @@ import java.util.Collections;
 import java.util.List;
 
 public class WebViewWithRefreshPackage implements ReactPackage {
+
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        return Collections.emptyList();
+        return Arrays.<NativeModule>asList(
+                new WebViewWithRefreshModule(reactContext)
+        );
     }
 
-    
+    @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         // Register your native component's view manager
         // https://facebook.github.io/react-native/docs/native-components-android.html#4-register-the-viewmanager
         return Arrays.<ViewManager>asList(
-            new WebViewWithRefreshManager()
+                new WebViewWithRefreshManager(reactContext)
         );
     }
 }

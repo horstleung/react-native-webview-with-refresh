@@ -1,14 +1,22 @@
 package com.reactlibrary;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.graphics.Bitmap; 
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
@@ -19,7 +27,7 @@ import java.util.regex.Pattern;
 
 // The callback interface
 interface MyWebViewClientCallback {
-    void webClientCallback(String url, String condition, String currentURL);
+    void webClientCallback(String url, String condition);
     void onStartLoad(String url);
     void onFinishLoad(String url);
 }
@@ -37,7 +45,7 @@ class MyWebViewClient extends WebViewClient {
         Matcher matcher = mPattern.matcher(url);
         if(matcher.find())
         {
-            delegate.webClientCallback(url, condition, view.getUrl());
+            delegate.webClientCallback(url, condition);
             return true;
         }
         return super.shouldOverrideUrlLoading(view, url);
@@ -61,6 +69,11 @@ public class WebViewWithRefresh extends RelativeLayout {
     WebView wv;
     SwipeRefreshLayout swipe;
     MyWebViewClient webClient;
+    private FrameLayout customViewContainer;
+    private WebChromeClient.CustomViewCallback customViewCallback;
+    private View mCustomView;
+    private MyWebChromeClient mWebChromeClient;
+
     public WebViewWithRefresh(Context context) {
         super(context);
         this.context = context;
@@ -70,16 +83,21 @@ public class WebViewWithRefresh extends RelativeLayout {
     public void init() {
         inflate(this.context, R.layout.web_view_with_refresh, this);
          wv = (WebView) findViewById(R.id.webView);
+        customViewContainer = (FrameLayout) findViewById(R.id.customViewContainer);
+
         wv.getSettings().setJavaScriptEnabled(true);
         wv.getSettings().setDisplayZoomControls(false);
+        wv.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+        wv.getSettings().setPluginState(WebSettings.PluginState.ON);
+        wv.getSettings().setMediaPlaybackRequiresUserGesture(false);
+        wv.setWebChromeClient(new MyWebChromeClient());
         webClient = new MyWebViewClient();
         webClient.delegate = new MyWebViewClientCallback() {
             @Override
-            public void webClientCallback(String url, String condition, String currentURL) {
+            public void webClientCallback(String url, String condition) {
                 WritableMap event = Arguments.createMap();
                 event.putString("url", url);
                 event.putString("condition", condition);
-                event.putString("currentURL", currentURL);
                 ReactContext reactContext = (ReactContext)getContext();
                 reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                         getId(),
@@ -130,6 +148,57 @@ public class WebViewWithRefresh extends RelativeLayout {
     public void goTo(String url) {
         WebView wv = (WebView) findViewById(R.id.webView);
         wv.loadUrl(url);
+    }
+
+    public Boolean backPressed(){
+
+        new AlertDialog.Builder(this.getContext())
+                .setTitle("Your Alert")
+                .setMessage("Your Message")
+                .setCancelable(true).show();
+        return true;
+    }
+
+    private class MyWebChromeClient extends WebChromeClient {
+        @Override
+        public void onShowCustomView(View view, int requestedOrientation, CustomViewCallback callback) {
+            onShowCustomView(view, callback);    //To change body of overridden methods use File | Settings | File Templates.
+        }
+
+        @Override
+        public void onShowCustomView(View view,CustomViewCallback callback) {
+
+            // if a view already exists then immediately terminate the new one
+            if (mCustomView != null) {
+                callback.onCustomViewHidden();
+                return;
+            }
+            mCustomView = view;
+            wv.setVisibility(View.GONE);
+            customViewContainer.setVisibility(View.VISIBLE);
+            customViewContainer.addView(view);
+            customViewCallback = callback;
+        }
+
+
+        @Override
+        public void onHideCustomView() {
+            super.onHideCustomView();    //To change body of overridden methods use File | Settings | File Templates.
+            if (mCustomView == null)
+                return;
+
+            wv.setVisibility(View.VISIBLE);
+            customViewContainer.setVisibility(View.GONE);
+
+            // Hide the custom view.
+            mCustomView.setVisibility(View.GONE);
+
+            // Remove the custom view from its container.
+            customViewContainer.removeView(mCustomView);
+            customViewCallback.onCustomViewHidden();
+
+            mCustomView = null;
+        }
     }
 
 
