@@ -29,8 +29,8 @@ export default class App extends Component {
     return (
       <View style={styles.container}>
         <WebViewWithRefresh
-          url="http://mobileapi.metroradio.com.hk/MetroMobile/mobile/default.aspx"
-          matchCondition="(http|https)://starfans.info"
+          url="https://google.com"
+          matchCondition="(http|https)://youtube.com"
           onUrlMatch={this.onUrlChange}
           onStartLoad={this.onStartLoad}
           onFinishLoad={this.onFinishLoad}
